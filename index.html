@@ -42,6 +42,37 @@
       margin-top: 0.25rem;
     }
 
+    .layout-controls {
+      margin-top: 0.6rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .layout-controls span {
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+
+    .layout-btn {
+      padding: 0.3rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid #374151;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: background 0.1s ease, border-color 0.1s ease, transform 0.1s ease;
+    }
+
+    .layout-btn.active {
+      background: #2563eb;
+      border-color: #3b82f6;
+      color: #f9fafb;
+      transform: translateY(-1px);
+    }
+
     main {
       flex: 1;
       display: flex;
@@ -147,6 +178,19 @@
       min-height: 40vh;
     }
 
+    /* Layout overrides when a layout is chosen */
+    #streamGrid[data-layout="1x1"] {
+      grid-template-columns: 1fr;
+    }
+
+    #streamGrid[data-layout="2x2"] {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    #streamGrid[data-layout="3x3"] {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
     .stream-slot {
       position: relative;
       background: radial-gradient(circle at top, #111827, #020617 60%);
@@ -182,32 +226,65 @@
       #streamGrid {
         min-height: 55vh;
       }
+      .hidden-controls {
+  display: none !important;
+}
+
+#streamGrid {
+  transition: all 0.25s ease;
+  .viewing-mode .controls {
+  display: none !important;
+}
+
+.viewing-mode header p {
+  display: none !important;
+}
+
+.viewing-mode .layout-controls {
+  margin-top: 0.5rem;
+}
+
+.viewing-mode main {
+  padding-top: 0 !important;
+}
+
+}
+
     }
   </style>
 </head>
 <body>
   <header>
+
     <h1>Multi Stream Viewer</h1>
     <p>Paste your embed URLs &amp; watch multiple streams on one screen.</p>
+    <div class="layout-controls">
+      <span>Layout:</span>
+      <button type="button" class="layout-btn active" data-layout="1x1">1×1</button>
+      <button type="button" class="layout-btn" data-layout="2x2">2×2</button>
+      <button type="button" class="layout-btn" data-layout="3x3">3×3</button>
+    <button id="toggleControlsBtn" class="layout-btn" style="margin-left:1rem;">Hide Controls</button>
+    <button id="toggleViewingModeBtn" class="layout-btn" style="margin-left:1rem;">Viewing Mode</button>
+    </div>
   </header>
 
   <main>
     <section class="controls">
-      <h2>Stream Links</h2>
-      <small>
-        Paste the <strong>embed URL (the src value)</strong> from your iframe code.<br />
-        Example: from
-        <code>&lt;iframe src="https://embednow.top/embed/nba/..."&gt;</code>
-        use just
-        <code>https://embednow.top/embed/nba/...</code>
-      </small>
+    <h2>Stream Links</h2>
+    <small>
+      Paste the <strong>embed URL (the src value)</strong> from your iframe code.<br />
+      Example: from
+      <code>&lt;iframe src="https://embednow.top/embed/nba/..."&gt;</code>
+      use just
+      <code>https://embednow.top/embed/nba/...</code>
+    </small>
 
-      <form id="streamForm">
-        <div class="inputs-grid">
-          <div class="input-group">
-            <label for="url1">Stream 1</label>
-            <input id="url1" type="url" placeholder="https://example.com/embed/stream1" />
-          </div>
+    <form id="streamForm">
+      <div class="inputs-grid">
+        <div class="input-group">
+        <label for="url1">Stream 1</label>
+        <input id="url1" type="url" placeholder="https://example.com/embed/stream1" />
+        </div>
           <div class="input-group">
             <label for="url2">Stream 2</label>
             <input id="url2" type="url" placeholder="https://example.com/embed/stream2" />
@@ -254,6 +331,16 @@
     const clearBtn = document.getElementById("clearBtn");
     const streamGrid = document.getElementById("streamGrid");
     const emptyState = document.getElementById("emptyState");
+    const layoutButtons = document.querySelectorAll(".layout-btn");
+    const viewingModeBtn = document.getElementById("toggleViewingModeBtn");
+
+viewingModeBtn.addEventListener("click", () => {
+  document.body.classList.toggle("viewing-mode");
+
+  const active = document.body.classList.contains("viewing-mode");
+  viewingModeBtn.textContent = active ? "Exit Viewing Mode" : "Viewing Mode";
+});
+
 
     function getUrlInputs() {
       const ids = ["url1", "url2", "url3", "url4", "url5", "url6"];
@@ -302,6 +389,26 @@
       });
       streamGrid.innerHTML = "";
       streamGrid.appendChild(emptyState);
+    });
+
+    // Layout button behavior: just change the grid columns
+    layoutButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const layout = btn.dataset.layout;
+        streamGrid.setAttribute("data-layout", layout);
+        layoutButtons.forEach((b) => {
+          b.classList.toggle("active", b === btn);
+          const controlsSection = document.querySelector(".controls");
+           const toggleControlsBtn = document.getElementById("toggleControlsBtn");
+
+toggleControlsBtn.addEventListener("click", () => {
+  const isHidden = controlsSection.classList.toggle("hidden-controls");
+
+  toggleControlsBtn.textContent = isHidden ? "Show Controls" : "Hide Controls";
+});
+
+        });
+      });
     });
   </script>
 </body>
